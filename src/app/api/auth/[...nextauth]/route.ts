@@ -1,4 +1,5 @@
 import NextAuth from "next-auth/next";
+import { User as NextUser } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { signIn } from "@/../firebase.config";
 
@@ -12,16 +13,22 @@ const handler = NextAuth({
       },
 
       async authorize(credentials, req) {
+        if (credentials == null) return null;
+
         const { user } = await signIn(
           credentials.username,
           credentials.password
         );
-
         if (user) {
-          return user;
-        } else {
-          return null;
+          const nextUser: NextUser = {
+            id: user.uid,
+            name: user.displayName,
+            email: user.email,
+            image: user.photoURL,
+          };
+          return nextUser;
         }
+        return null;
       },
     }),
   ],
